@@ -149,3 +149,27 @@ CREATE TABLE `user` (
   `enabled` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for user_like
+-- ----------------------------
+DROP TABLE IF EXISTS `user_like`;
+CREATE TABLE `user_like` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) DEFAULT NULL,
+  `article_id` int(11) DEFAULT NULL,
+  `operation_type` int(11) DEFAULT NULL,
+  `operation_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for article_like_count
+-- ----------------------------
+DROP TABLE IF EXISTS `article_like_count`;
+CREATE TABLE `article_like_count` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `article_id` int(11) DEFAULT NULL,
+  `like_count` int(11) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;

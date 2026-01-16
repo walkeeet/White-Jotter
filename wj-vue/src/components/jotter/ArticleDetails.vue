@@ -7,6 +7,16 @@
         <div class="markdown-body">
           <div v-html="article.articleContentHtml"></div>
         </div>
+        <div style="margin-top: 20px;">
+          <el-button
+            :type="liked ? 'danger' : 'default'"
+            :icon="'el-icon-thumb'"
+            circle
+            @click="handleLike"
+          >
+          </el-button>
+          <span style="margin-left: 10px;">{{likeCount}} 赞</span>
+        </div>
       </div>
     </el-card>
   </div>
@@ -17,11 +27,14 @@
     name: 'ArticleDetails',
     data () {
       return {
-        article: []
+        article: [],
+        likeCount: 0,
+        liked: false
       }
     },
     mounted () {
       this.loadArticle()
+      this.loadLikeInfo()
     },
     methods: {
       loadArticle () {
@@ -30,6 +43,32 @@
           if (resp && resp.data.code === 200) {
             _this.article = resp.data.result
           }
+        })
+      },
+      loadLikeInfo () {
+        var _this = this
+        this.$axios.get('/article/like/' + this.$route.query.id).then(resp => {
+          if (resp && resp.data.code === 200) {
+            _this.likeCount = resp.data.result.count
+            _this.liked = resp.data.result.userStatus === 1
+          }
+        })
+      },
+      handleLike () {
+        var _this = this
+        this.$axios.post('/article/like/' + this.$route.query.id).then(resp => {
+          if (resp && resp.data.code === 200) {
+            _this.likeCount = resp.data.result.count
+            _this.liked = resp.data.result.status === 1
+          } else {
+            _this.$message.warning(resp.data.message || '操作失败')
+            if (resp.data.message === '请先登录') {
+              _this.$router.push('/login')
+            }
+          }
+        }).catch(err => {
+          console.log(err)
+          this.$message.error('网络错误')
         })
       }
     }
