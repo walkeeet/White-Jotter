@@ -149,3 +149,30 @@ CREATE TABLE `user` (
   `enabled` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for article_like
+-- ----------------------------
+DROP TABLE IF EXISTS `article_like`;
+CREATE TABLE `article_like` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `article_id` int(11) NOT NULL,
+  `action_type` int(11) DEFAULT NULL COMMENT '1-点赞，0-取消点赞',
+  `create_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_like_user` (`user_id`),
+  KEY `fk_like_article` (`article_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for article_like_count
+-- ----------------------------
+DROP TABLE IF EXISTS `article_like_count`;
+CREATE TABLE `article_like_count` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `article_id` int(11) NOT NULL,
+  `like_count` int(11) DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `fk_like_count_article` (`article_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
