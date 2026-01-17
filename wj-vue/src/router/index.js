@@ -75,6 +75,14 @@ export default new Router({
           meta: {
             requireAuth: true
           }
+        },
+        {
+          path: '/user/mycollections',
+          name: 'MyCollections',
+          component: () => import('../components/user/MyCollections'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },

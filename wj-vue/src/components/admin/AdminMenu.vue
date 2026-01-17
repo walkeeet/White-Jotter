@@ -20,6 +20,10 @@
           {{ child.nameZh }}
         </el-menu-item>
       </el-submenu>
+      <el-menu-item index="/user/mycollections">
+        <i class="el-icon-star-on"></i>
+        <span slot="title">我的收藏</span>
+      </el-menu-item>
   </el-menu>
 </template>
 

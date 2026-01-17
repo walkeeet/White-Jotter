@@ -24,6 +24,15 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <div class="collection-btn">
+            <el-button
+              :type="isCollected(item.id) ? 'warning' : 'primary'"
+              size="mini"
+              @click="toggleCollection(item.id)"
+              :loading="collectionLoading[item.id]">
+              {{ isCollected(item.id) ? '已收藏' : '收藏' }}
+            </el-button>
+          </div>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -49,11 +58,14 @@
       return {
         books: [],
         currentPage: 1,
-        pagesize: 18
+        pagesize: 18,
+        collectedBooks: new Set(),
+        collectionLoading: {}
       }
     },
     mounted: function () {
       this.loadBooks()
+      this.loadCollectedBooks()
     },
     methods: {
       loadBooks () {
@@ -62,6 +74,53 @@
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
           }
+        })
+      },
+      loadCollectedBooks () {
+        if (!this.$store.state.username) {
+          return
+        }
+        var _this = this
+        this.$axios.get('/api/collection/my').then(resp => {
+          if (resp && resp.data.code === 200) {
+            resp.data.result.forEach(item => {
+              _this.collectedBooks.add(item.book.id)
+            })
+          }
+        }).catch(() => {
+          // 用户未登录
+        })
+      },
+      isCollected (bookId) {
+        return this.collectedBooks.has(bookId)
+      },
+      toggleCollection (bookId) {
+        if (!this.$store.state.username) {
+          this.$message.warning('请先登录')
+          this.$router.push('/login')
+          return
+        }
+
+        this.collectionLoading[bookId] = true
+        const isCollected = this.isCollected(bookId)
+        const url = isCollected ? '/api/collection/remove' : '/api/collection/add'
+
+        this.$axios.post(url, { bookId: bookId }).then(resp => {
+          if (resp && resp.data.code === 200) {
+            if (isCollected) {
+              this.collectedBooks.delete(bookId)
+              this.$message.success('已取消收藏')
+            } else {
+              this.collectedBooks.add(bookId)
+              this.$message.success('收藏成功')
+            }
+          } else {
+            this.$message.error(resp.data.message)
+          }
+        }).catch(() => {
+          this.$message.error('操作失败')
+        }).finally(() => {
+          this.collectionLoading[bookId] = false
         })
       },
       handleCurrentChange: function (currentPage) {
@@ -107,6 +166,11 @@
     font-size: 13px;
     margin-bottom: 6px;
     text-align: left;
+  }
+
+  .collection-btn {
+    margin-top: 5px;
+    text-align: center;
   }
 
   .abstract {
