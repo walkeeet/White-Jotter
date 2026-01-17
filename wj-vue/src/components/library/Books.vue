@@ -13,7 +13,7 @@
           <span>{{item.press}}</span>
         </p>
         <p slot="content" style="width: 300px" class="abstract">{{item.abs}}</p>
-        <el-card style="width: 135px;margin-bottom: 20px;height: 233px;float: left;margin-right: 15px" class="book"
+        <el-card style="width: 135px;margin-bottom: 20px;height: 270px;float: left;margin-right: 15px" class="book"
                  bodyStyle="padding:10px" shadow="hover">
           <div class="cover">
             <img :src="item.cover" alt="封面">
@@ -24,6 +24,24 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <el-button
+            v-if="isCollected(item.id)"
+            type="danger"
+            size="mini"
+            icon="el-icon-star-on"
+            @click="uncollectBook(item.id)"
+            class="collect-btn">
+            已收藏
+          </el-button>
+          <el-button
+            v-else
+            type="primary"
+            size="mini"
+            icon="el-icon-star-off"
+            @click="collectBook(item.id)"
+            class="collect-btn">
+            收藏
+          </el-button>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -49,11 +67,13 @@
       return {
         books: [],
         currentPage: 1,
-        pagesize: 18
+        pagesize: 18,
+        collectedBooks: new Set()
       }
     },
     mounted: function () {
       this.loadBooks()
+      this.loadCollectStatus()
     },
     methods: {
       loadBooks () {
@@ -61,6 +81,7 @@
         this.$axios.get('/books').then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.loadCollectStatus()
           }
         })
       },
@@ -74,6 +95,54 @@
           }).then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.loadCollectStatus()
+          }
+        })
+      },
+      loadCollectStatus () {
+        var _this = this
+        if (!_this.$store.state.username) {
+          return
+        }
+        _this.books.forEach(book => {
+          _this.$axios.get('/collect/status?bookId=' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              if (resp.data.result) {
+                _this.collectedBooks.add(book.id)
+              } else {
+                _this.collectedBooks.delete(book.id)
+              }
+            }
+          })
+        })
+      },
+      isCollected (bookId) {
+        return this.collectedBooks.has(bookId)
+      },
+      collectBook (bookId) {
+        var _this = this
+        if (!_this.$store.state.username) {
+          _this.$message.error('请先登录')
+          _this.$router.push('/login')
+          return
+        }
+        this.$axios.post('/collect?bookId=' + bookId).then(resp => {
+          if (resp && resp.data.code === 200) {
+            _this.$message.success(resp.data.result)
+            _this.collectedBooks.add(bookId)
+          } else {
+            _this.$message.error(resp.data.message)
+          }
+        })
+      },
+      uncollectBook (bookId) {
+        var _this = this
+        this.$axios.post('/uncollect?bookId=' + bookId).then(resp => {
+          if (resp && resp.data.code === 200) {
+            _this.$message.success(resp.data.result)
+            _this.collectedBooks.delete(bookId)
+          } else {
+            _this.$message.error(resp.data.message)
           }
         })
       }
@@ -132,6 +201,11 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .collect-btn {
+    width: 100%;
+    margin-top: 5px;
   }
 
 </style>
