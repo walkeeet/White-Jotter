@@ -24,6 +24,9 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <div class="collect-btn">
+            <el-button type="text" @click="toggleCollect(item.id)" :icon="isCollected(item.id) ? 'el-icon-star-on' : 'el-icon-star-off'" circle size="mini"></el-button>
+          </div>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -49,11 +52,15 @@
       return {
         books: [],
         currentPage: 1,
-        pagesize: 18
+        pagesize: 18,
+        collectedBooks: new Set()
       }
     },
     mounted: function () {
       this.loadBooks()
+      if (this.$store.state.username) {
+        this.loadCollectStatus()
+      }
     },
     methods: {
       loadBooks () {
@@ -74,6 +81,41 @@
           }).then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+          }
+        })
+      },
+      toggleCollect (bookId) {
+        if (!this.$store.state.user) {
+          this.$router.push('/login')
+          return
+        }
+        if (this.collectedBooks.has(bookId)) {
+          this.$axios.delete('/api/collect/' + bookId).then(resp => {
+            if (resp.data.code === 200) {
+              this.collectedBooks.delete(bookId)
+              this.$message.success('取消收藏成功')
+            }
+          })
+        } else {
+          this.$axios.post('/api/collect/' + bookId).then(resp => {
+            if (resp.data.code === 200) {
+              this.collectedBooks.add(bookId)
+              this.$message.success('收藏成功')
+            } else {
+              this.$message.error(resp.data.message || '收藏失败')
+            }
+          })
+        }
+      },
+      isCollected (bookId) {
+        return this.collectedBooks.has(bookId)
+      },
+      loadCollectStatus () {
+        this.$axios.get('/api/collect').then(resp => {
+          if (resp.data.code === 200) {
+            resp.data.result.forEach(item => {
+              this.collectedBooks.add(item.book.id)
+            })
           }
         })
       }
