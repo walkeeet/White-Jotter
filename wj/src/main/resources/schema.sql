@@ -149,3 +149,19 @@ CREATE TABLE `user` (
   `enabled` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for collect_book
+-- ----------------------------
+DROP TABLE IF EXISTS `collect_book`;
+CREATE TABLE `collect_book` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `user_id` int(11) NOT NULL,
+  `book_id` int(11) NOT NULL,
+  `collect_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_collect_book_user` (`user_id`),
+  KEY `fk_collect_book_book` (`book_id`),
+  CONSTRAINT `fk_collect_book_user` FOREIGN KEY (`user_id`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collect_book_book` FOREIGN KEY (`book_id`) REFERENCES `book` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
