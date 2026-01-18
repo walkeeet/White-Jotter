@@ -57,4 +57,8 @@ public class JotterArticle {
      * Article release date.
      */
     private Date articleDate;
+
+    private int commentCount;
+
+
 }

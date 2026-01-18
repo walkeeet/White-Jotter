@@ -3,6 +3,7 @@ package com.gm.wj.service;
 import com.gm.wj.dao.JotterArticleDAO;
 import com.gm.wj.entity.JotterArticle;
 import com.gm.wj.redis.RedisService;
+import com.gm.wj.service.CommentService;
 import com.gm.wj.util.MyPage;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,8 @@ public class JotterArticleService {
     JotterArticleDAO jotterArticleDAO;
     @Autowired
     RedisService redisService;
+    @Autowired
+    CommentService commentService;
 
     public MyPage list(int page, int size) {
         MyPage<JotterArticle> articles;
@@ -71,6 +74,7 @@ public class JotterArticleService {
 
     public void delete(int id) {
         jotterArticleDAO.deleteById(id);
+        commentService.deleteByArticleId(id);
 
         redisService.delete("article:" + id);
         Set<String> keys = redisService.getKeysByPattern("articlepage*");
