@@ -6,6 +6,10 @@
         <div v-for="article in articles" :key="article.id">
           <div style="float:left;width:85%;height: 150px;">
             <router-link class="article-link" :to="{path:'jotter/article',query:{id: article.id}}"><span style="font-size: 20px"><strong>{{article.articleTitle}}</strong></span></router-link>
+            <div style="font-size: 14px; color: #999; margin-top: 5px;">
+              <span>作者：{{article.author ? article.author.nickname : '未知'}}</span>
+              <span style="margin-left: 20px;">评论：{{article.commentCount || 0}}</span>
+            </div>
             <el-divider content-position="left">{{article.articleDate}}</el-divider>
             <router-link class="article-link" :to="{path:'jotter/article',query:{id: article.id}}"><p>{{article.articleAbstract}}</p></router-link>
           </div>

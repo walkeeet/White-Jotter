@@ -54,8 +54,8 @@ public class RoleController {
 
     @PostMapping("/api/admin/role")
     public Result addRole(@RequestBody AdminRole requestRole) {
-        adminRoleService.editRole(requestRole);
-        return ResultFactory.buildSuccessResult("修改用户成功");
+        adminRoleService.addOrUpdate(requestRole);
+        return ResultFactory.buildSuccessResult("添加角色成功");
     }
 
     @GetMapping("/api/admin/role/perm")

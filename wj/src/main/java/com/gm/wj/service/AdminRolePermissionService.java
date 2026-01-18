@@ -19,7 +19,7 @@ public class AdminRolePermissionService {
     @Autowired
     AdminRolePermissionDAO adminRolePermissionDAO;
 
-    List<AdminRolePermission> findAllByRid(int rid) {
+    public List<AdminRolePermission> findAllByRid(int rid) {
         return adminRolePermissionDAO.findAllByRid(rid);
     }
 

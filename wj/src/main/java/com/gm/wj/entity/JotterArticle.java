@@ -9,6 +9,8 @@ import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
 
+import static javax.persistence.FetchType.LAZY;
+
 /**
  * Article entity.
  *
@@ -57,4 +59,17 @@ public class JotterArticle {
      * Article release date.
      */
     private Date articleDate;
+
+    /**
+     * Article author.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    @JsonIgnoreProperties({"password", "salt", "roles"})
+    private User author;
+
+    /**
+     * Comment count.
+     */
+    private int commentCount = 0;
 }
