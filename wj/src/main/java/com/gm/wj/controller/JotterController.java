@@ -20,7 +20,7 @@ public class JotterController {
     @Autowired
     JotterArticleService jotterArticleService;
 
-    @PostMapping("api/admin/content/article")
+    @PostMapping("/api/admin/content/article")
     public Result saveArticle(@RequestBody @Valid JotterArticle article) {
         jotterArticleService.addOrUpdate(article);
         return ResultFactory.buildSuccessResult("保存成功");
