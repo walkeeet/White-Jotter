@@ -24,6 +24,14 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <el-button
+            class="favorite-btn"
+            :type="item.isFavorite ? 'danger' : 'info'"
+            size="mini"
+            circle
+            @click.stop="toggleFavorite(item)">
+            <i :class="item.isFavorite ? 'el-icon-star-on' : 'el-icon-star-off'"></i>
+          </el-button>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -61,8 +69,49 @@
         this.$axios.get('/books').then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.loadFavoriteStatus()
           }
         })
+      },
+      loadFavoriteStatus () {
+        var _this = this
+        if (!_this.$store.state.username) {
+          return
+        }
+        _this.books.forEach(book => {
+          _this.$axios.get('/favorites/check/' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.isFavorite = resp.data.result
+            }
+          })
+        })
+      },
+      toggleFavorite (item) {
+        var _this = this
+        if (!_this.$store.state.username) {
+          _this.$message.info('请先登录')
+          _this.$router.push('/login')
+          return
+        }
+        if (item.isFavorite) {
+          _this.$axios.post('/favorites/remove', {id: item.id}).then(resp => {
+            if (resp && resp.data.code === 200) {
+              item.isFavorite = false
+              _this.$message.success('取消收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        } else {
+          _this.$axios.post('/favorites/add', {id: item.id}).then(resp => {
+            if (resp && resp.data.code === 200) {
+              item.isFavorite = true
+              _this.$message.success('收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        }
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage
@@ -74,6 +123,7 @@
           }).then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.loadFavoriteStatus()
           }
         })
       }
@@ -132,6 +182,16 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .favorite-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+  }
+
+  .book {
+    position: relative;
   }
 
 </style>

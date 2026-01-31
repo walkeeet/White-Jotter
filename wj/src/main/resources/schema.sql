@@ -149,3 +149,19 @@ CREATE TABLE `user` (
   `enabled` tinyint(1) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Table structure for book_favorite
+-- ----------------------------
+DROP TABLE IF EXISTS `book_favorite`;
+CREATE TABLE `book_favorite` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) DEFAULT NULL,
+  `bid` int(11) DEFAULT NULL,
+  `favorite_time` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `fk_favorite_user` (`uid`),
+  KEY `fk_favorite_book` (`bid`),
+  CONSTRAINT `fk_favorite_user` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_favorite_book` FOREIGN KEY (`bid`) REFERENCES `book` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
