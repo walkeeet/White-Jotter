@@ -47,6 +47,30 @@ export default new Router({
           path: '/library',
           name: 'Library',
           component: () => import('../components/library/LibraryIndex')
+        },
+        {
+          path: '/notes',
+          name: 'Notes',
+          component: () => import('../components/jotter/Notes'),
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
+          path: '/note/detail',
+          name: 'NoteDetail',
+          component: () => import('../components/jotter/NoteDetails'),
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
+          path: '/note/editor',
+          name: 'NoteEditor',
+          component: () => import('../components/jotter/NoteEditor'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },
@@ -129,6 +153,30 @@ export const createRouter = routes => new Router({
           path: '/library',
           name: 'Library',
           component: () => import('../components/library/LibraryIndex')
+        },
+        {
+          path: '/notes',
+          name: 'Notes',
+          component: () => import('../components/jotter/Notes'),
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
+          path: '/note/detail',
+          name: 'NoteDetail',
+          component: () => import('../components/jotter/NoteDetails'),
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
+          path: '/note/editor',
+          name: 'NoteEditor',
+          component: () => import('../components/jotter/NoteEditor'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },
