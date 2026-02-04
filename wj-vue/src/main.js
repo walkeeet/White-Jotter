@@ -150,10 +150,15 @@ router.beforeEach((to, from, next) => {
           if (resp) {
             next()
           }
+        }).catch(() => {
+          next({
+            path: '/login',
+            query: {redirect: to.fullPath}
+          })
         })
       } else {
         next({
-          path: 'login',
+          path: '/login',
           query: {redirect: to.fullPath}
         })
       }
@@ -169,7 +174,8 @@ axios.interceptors.response.use(
     return response
   },
   error => {
-    if (error) {
+    if (error.response && error.response.status === 401) {
+      // 只有401未授权时才登出并跳转到登录页
       store.commit('logout')
       router.replace('/login')
     }

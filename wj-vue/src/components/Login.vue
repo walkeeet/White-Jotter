@@ -39,24 +39,33 @@
     methods: {
       login () {
         var _this = this
+        this.loading = true
         this.$axios
           .post('/login', {
             username: this.loginForm.username,
             password: this.loginForm.password
           })
           .then(resp => {
+            _this.loading = false
             if (resp.data.code === 200) {
               var data = resp.data.result
               _this.$store.commit('login', data)
+              _this.$message.success('登录成功')
               var path = _this.$route.query.redirect
-              _this.$router.replace({path: path === '/' || path === undefined ? '/admin/dashboard' : path})
+              var redirectPath = path === '/' || path === undefined ? '/admin/dashboard' : path
+              _this.$router.replace({path: redirectPath})
             } else {
               this.$alert(resp.data.message, '提示', {
                 confirmButtonText: '确定'
               })
             }
           })
-          .catch(failResponse => {})
+          .catch(failResponse => {
+            _this.loading = false
+            this.$alert('登录失败，请检查网络连接', '提示', {
+              confirmButtonText: '确定'
+            })
+          })
       }
       }
     }
