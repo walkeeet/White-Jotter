@@ -13,7 +13,7 @@
           <span>{{item.press}}</span>
         </p>
         <p slot="content" style="width: 300px" class="abstract">{{item.abs}}</p>
-        <el-card style="width: 135px;margin-bottom: 20px;height: 233px;float: left;margin-right: 15px" class="book"
+        <el-card style="width: 135px;margin-bottom: 20px;height: 253px;float: left;margin-right: 15px" class="book"
                  bodyStyle="padding:10px" shadow="hover">
           <div class="cover">
             <img :src="item.cover" alt="封面">
@@ -24,6 +24,14 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <div class="favorite-btn">
+            <el-button
+              :type="isFavorited(item.id) ? 'danger' : 'default'"
+              :icon="isFavorited(item.id) ? 'el-icon-star-on' : 'el-icon-star-off'"
+              size="mini"
+              circle
+              @click.stop="toggleFavorite(item)"></el-button>
+          </div>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -49,11 +57,13 @@
       return {
         books: [],
         currentPage: 1,
-        pagesize: 18
+        pagesize: 18,
+        favoriteBookIds: []
       }
     },
     mounted: function () {
       this.loadBooks()
+      this.loadFavorites()
     },
     methods: {
       loadBooks () {
@@ -76,6 +86,79 @@
             _this.books = resp.data.result
           }
         })
+      },
+      loadFavorites () {
+        var _this = this
+        this.$axios.get('/favorites').then(resp => {
+          if (resp && resp.data.code === 200) {
+            _this.favoriteBookIds = resp.data.result.map(item => item.bookId)
+          }
+        }).catch(err => {
+          // 未登录时不显示错误
+          if (err.response && err.response.status !== 401) {
+            console.error('加载收藏失败:', err)
+          }
+        })
+      },
+
+      isFavorited (bookId) {
+        return this.favoriteBookIds.indexOf(bookId) !== -1
+      },
+      toggleFavorite (book) {
+        var _this = this
+        // 先检查是否已登录
+        if (!this.$store.state.username) {
+          this.$message.warning('请先登录')
+          this.$router.push({
+            path: '/login',
+            query: {redirect: this.$route.fullPath}
+          })
+          return
+        }
+        if (this.isFavorited(book.id)) {
+          this.$axios.delete('/favorites/' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.$message.success('取消收藏成功')
+              var index = _this.favoriteBookIds.indexOf(book.id)
+              if (index !== -1) {
+                _this.favoriteBookIds.splice(index, 1)
+              }
+            } else {
+              _this.$message.error(resp.data.message || '取消收藏失败')
+            }
+          }).catch(err => {
+            console.error('取消收藏错误:', err)
+            if (err.response && err.response.status === 401) {
+              _this.$message.warning('请先登录')
+              _this.$router.push({
+                path: '/login',
+                query: {redirect: _this.$route.fullPath}
+              })
+            } else {
+              _this.$message.error('取消收藏失败')
+            }
+          })
+        } else {
+          this.$axios.post('/favorites', {bookId: book.id}).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.$message.success('收藏成功')
+              _this.favoriteBookIds.push(book.id)
+            } else {
+              _this.$message.error(resp.data.message || '收藏失败')
+            }
+          }).catch(err => {
+            console.error('收藏错误:', err)
+            if (err.response && err.response.status === 401) {
+              _this.$message.warning('请先登录')
+              _this.$router.push({
+                path: '/login',
+                query: {redirect: _this.$route.fullPath}
+              })
+            } else {
+              _this.$message.error('收藏失败')
+            }
+          })
+        }
       }
     }
   }
@@ -132,6 +215,11 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .favorite-btn {
+    text-align: center;
+    margin-top: 5px;
   }
 
 </style>
