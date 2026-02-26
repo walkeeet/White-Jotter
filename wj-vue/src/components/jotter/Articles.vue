@@ -1,6 +1,5 @@
 <template>
   <div style="margin-top: 40px">
-    <!--<el-button @click="addArticle()">添加文章</el-button>-->
     <div class="articles-area">
       <el-card style="text-align: left">
         <div v-for="article in articles" :key="article.id">
@@ -8,6 +7,9 @@
             <router-link class="article-link" :to="{path:'jotter/article',query:{id: article.id}}"><span style="font-size: 20px"><strong>{{article.articleTitle}}</strong></span></router-link>
             <el-divider content-position="left">{{article.articleDate}}</el-divider>
             <router-link class="article-link" :to="{path:'jotter/article',query:{id: article.id}}"><p>{{article.articleAbstract}}</p></router-link>
+            <div class="article-meta">
+              <span class="comment-count"><i class="el-icon-chat-dot-round"></i> {{article.commentCount || 0}} 条评论</span>
+            </div>
           </div>
           <el-image
             style="margin:18px 0 0 30px;width:100px;height: 100px"
@@ -29,39 +31,51 @@
 
 <script>
 
-  export default {
-    name: 'Articles',
-    data () {
-      return {
-        articles: [],
-        pageSize: 4,
-        total: 0
-      }
+export default {
+  name: 'Articles',
+  data () {
+    return {
+      articles: [],
+      pageSize: 4,
+      total: 0
+    }
+  },
+  mounted () {
+    this.loadArticles()
+  },
+  methods: {
+    loadArticles () {
+      var _this = this
+      this.$axios.get('/article/' + this.pageSize + '/1').then(resp => {
+        if (resp && resp.data.code === 200) {
+          _this.articles = resp.data.result.content
+          _this.total = resp.data.result.totalElements
+          _this.loadCommentCounts()
+        }
+      })
     },
-    mounted () {
-      this.loadArticles()
-    },
-    methods: {
-      loadArticles () {
-        var _this = this
-        this.$axios.get('/article/' + this.pageSize + '/1').then(resp => {
+    loadCommentCounts () {
+      var _this = this
+      this.articles.forEach(function (article) {
+        _this.$axios.get('/article/' + article.id + '/commentCount').then(resp => {
           if (resp && resp.data.code === 200) {
-            _this.articles = resp.data.result.content
-            _this.total = resp.data.result.totalElements
+            _this.$set(article, 'commentCount', resp.data.result)
           }
         })
-      },
-      handleCurrentChange (page) {
-        var _this = this
-        this.$axios.get('/article/' + this.pageSize + '/' + page).then(resp => {
-          if (resp && resp.data.code === 200) {
-            _this.articles = resp.data.result.content
-            _this.total = resp.data.result.totalElements
-          }
-        })
-      }
+      })
+    },
+    handleCurrentChange (page) {
+      var _this = this
+      this.$axios.get('/article/' + this.pageSize + '/' + page).then(resp => {
+        if (resp && resp.data.code === 200) {
+          _this.articles = resp.data.result.content
+          _this.total = resp.data.result.totalElements
+          _this.loadCommentCounts()
+        }
+      })
     }
   }
+}
 </script>
 
 <style scoped>
@@ -79,5 +93,19 @@
 
   .article-link:hover {
     color: #409EFF;
+  }
+
+  .article-meta {
+    margin-top: 10px;
+    font-size: 13px;
+    color: #909399;
+  }
+
+  .comment-count {
+    margin-right: 15px;
+  }
+
+  .comment-count i {
+    margin-right: 3px;
   }
 </style>
