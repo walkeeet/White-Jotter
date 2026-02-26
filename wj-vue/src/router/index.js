@@ -75,6 +75,14 @@ export default new Router({
           meta: {
             requireAuth: true
           }
+        },
+        {
+          path: '/admin/collection',
+          name: 'Collection',
+          component: () => import('../components/admin/content/CollectionManagement'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },
@@ -154,6 +162,14 @@ export const createRouter = routes => new Router({
           path: '/admin/dashboard',
           name: 'Dashboard',
           component: () => import('../components/admin/dashboard/admin/index'),
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
+          path: '/admin/collection',
+          name: 'Collection',
+          component: () => import('../components/admin/content/CollectionManagement'),
           meta: {
             requireAuth: true
           }

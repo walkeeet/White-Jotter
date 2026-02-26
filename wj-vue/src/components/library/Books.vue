@@ -13,7 +13,7 @@
           <span>{{item.press}}</span>
         </p>
         <p slot="content" style="width: 300px" class="abstract">{{item.abs}}</p>
-        <el-card style="width: 135px;margin-bottom: 20px;height: 233px;float: left;margin-right: 15px" class="book"
+        <el-card style="width: 135px;margin-bottom: 20px;height: 260px;float: left;margin-right: 15px" class="book"
                  bodyStyle="padding:10px" shadow="hover">
           <div class="cover">
             <img :src="item.cover" alt="封面">
@@ -24,6 +24,13 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <div class="collection-btn">
+            <el-button type="text" @click.stop="handleCollection(item)"
+              :class="item.isCollected ? 'collected' : ''"
+              :icon="item.isCollected ? 'el-icon-star-on' : 'el-icon-star-off'">
+              {{ item.isCollected ? '已收藏' : '收藏' }}
+            </el-button>
+          </div>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -52,6 +59,13 @@
         pagesize: 18
       }
     },
+    watch: {
+      books: function (newBooks, oldBooks) {
+        if (newBooks && newBooks.length > 0) {
+          this.loadCollectionStatus()
+        }
+      }
+    },
     mounted: function () {
       this.loadBooks()
     },
@@ -61,8 +75,48 @@
         this.$axios.get('/books').then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.loadCollectionStatus()
           }
         })
+      },
+      loadCollectionStatus () {
+        var _this = this
+        if (!_this.$store.state.username) {
+          return
+        }
+        _this.books.forEach(book => {
+          _this.$axios.get('/collection/status?bid=' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.isCollected = resp.data.result
+            }
+          })
+        })
+      },
+      handleCollection (book) {
+      var _this = this
+      if (!_this.$store.state.username) {
+        _this.$router.push({path: '/login', query: {redirect: '/library'}})
+        return
+      }
+        if (book.isCollected) {
+          _this.$axios.post('/collection/remove?bid=' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.isCollected = false
+              _this.$message('取消收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        } else {
+          _this.$axios.post('/collection/add?bid=' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.isCollected = true
+              _this.$message('收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        }
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage
@@ -74,6 +128,7 @@
           }).then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.loadCollectionStatus()
           }
         })
       }
@@ -132,6 +187,24 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .collection-btn {
+    text-align: center;
+    margin-top: 5px;
+  }
+
+  .collection-btn .el-button {
+    font-size: 12px;
+    color: #999;
+  }
+
+  .collection-btn .el-button.collected {
+    color: #409eff;
+  }
+
+  .collection-btn .el-button:hover {
+    color: #409eff;
   }
 
 </style>
