@@ -13,7 +13,7 @@
           <span>{{item.press}}</span>
         </p>
         <p slot="content" style="width: 300px" class="abstract">{{item.abs}}</p>
-        <el-card style="width: 135px;margin-bottom: 20px;height: 233px;float: left;margin-right: 15px" class="book"
+        <el-card style="width: 135px;margin-bottom: 20px;height: 250px;float: left;margin-right: 15px" class="book"
                  bodyStyle="padding:10px" shadow="hover">
           <div class="cover">
             <img :src="item.cover" alt="封面">
@@ -24,6 +24,15 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <div class="favorite-btn">
+            <el-button
+              :type="isFavorite(item.id) ? 'danger' : 'default'"
+              :icon="isFavorite(item.id) ? 'el-icon-star-on' : 'el-icon-star-off'"
+              size="mini"
+              circle
+              @click.stop="toggleFavorite(item.id)">
+            </el-button>
+          </div>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -49,11 +58,13 @@
       return {
         books: [],
         currentPage: 1,
-        pagesize: 18
+        pagesize: 18,
+        favoriteBookIds: []
       }
     },
     mounted: function () {
       this.loadBooks()
+      this.loadFavorites()
     },
     methods: {
       loadBooks () {
@@ -63,6 +74,44 @@
             _this.books = resp.data.result
           }
         })
+      },
+      loadFavorites () {
+        var _this = this
+        this.$axios.get('/favorite/list').then(resp => {
+          if (resp && resp.data.code === 200) {
+            _this.favoriteBookIds = resp.data.result.map(book => book.id)
+          }
+        })
+      },
+      isFavorite (bookId) {
+        return this.favoriteBookIds.includes(bookId)
+      },
+      toggleFavorite (bookId) {
+        var _this = this
+        if (!this.$store.state.username) {
+          this.$message.warning('请先登录后再收藏')
+          this.$router.push('/login')
+          return
+        }
+        if (this.isFavorite(bookId)) {
+          this.$axios.post('/favorite/delete?bookId=' + bookId).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.favoriteBookIds = _this.favoriteBookIds.filter(id => id !== bookId)
+              _this.$message.success('取消收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        } else {
+          this.$axios.post('/favorite/add?bookId=' + bookId).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.favoriteBookIds.push(bookId)
+              _this.$message.success('收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        }
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage
@@ -132,6 +181,11 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .favorite-btn {
+    text-align: center;
+    margin-top: 5px;
   }
 
 </style>
