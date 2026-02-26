@@ -6,7 +6,7 @@
         <div v-for="article in articles" :key="article.id">
           <div style="float:left;width:85%;height: 150px;">
             <router-link class="article-link" :to="{path:'jotter/article',query:{id: article.id}}"><span style="font-size: 20px"><strong>{{article.articleTitle}}</strong></span></router-link>
-            <el-divider content-position="left">{{article.articleDate}}</el-divider>
+            <el-divider content-position="left">{{article.articleDate}} <span style="margin-left: 20px"><i class="el-icon-chat-dot-round"></i> {{article.commentCount || 0}} 评论</span></el-divider>
             <router-link class="article-link" :to="{path:'jotter/article',query:{id: article.id}}"><p>{{article.articleAbstract}}</p></router-link>
           </div>
           <el-image
@@ -48,7 +48,18 @@
           if (resp && resp.data.code === 200) {
             _this.articles = resp.data.result.content
             _this.total = resp.data.result.totalElements
+            _this.loadCommentCounts()
           }
+        })
+      },
+      loadCommentCounts () {
+        var _this = this
+        _this.articles.forEach(article => {
+          _this.$axios.get('/api/comment/count/' + article.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              article.commentCount = resp.data.result
+            }
+          })
         })
       },
       handleCurrentChange (page) {
@@ -57,6 +68,7 @@
           if (resp && resp.data.code === 200) {
             _this.articles = resp.data.result.content
             _this.total = resp.data.result.totalElements
+            _this.loadCommentCounts()
           }
         })
       }

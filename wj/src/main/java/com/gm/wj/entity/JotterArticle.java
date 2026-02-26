@@ -8,6 +8,7 @@ import javax.persistence.*;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.sql.Date;
+import java.sql.Timestamp;
 
 /**
  * Article entity.
@@ -57,4 +58,17 @@ public class JotterArticle {
      * Article release date.
      */
     private Date articleDate;
+
+    @ManyToOne
+    @JoinColumn(name = "author_id")
+    private User author;
+
+    @Column(name = "create_time")
+    private Timestamp createTime;
+
+    @Column(name = "update_time")
+    private Timestamp updateTime;
+
+    @Transient
+    private int commentCount;
 }

@@ -2,6 +2,7 @@ package com.gm.wj.service;
 
 import com.gm.wj.dao.JotterArticleDAO;
 import com.gm.wj.entity.JotterArticle;
+import com.gm.wj.entity.User;
 import com.gm.wj.redis.RedisService;
 import com.gm.wj.util.MyPage;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
+import java.sql.Timestamp;
 import java.util.Set;
 
 /**
@@ -20,6 +22,8 @@ import java.util.Set;
 public class JotterArticleService {
     @Autowired
     JotterArticleDAO jotterArticleDAO;
+    @Autowired
+    JotterCommentService jotterCommentService;
     @Autowired
     RedisService redisService;
 
@@ -65,6 +69,27 @@ public class JotterArticleService {
         jotterArticleDAO.save(article);
 
         redisService.delete("article" + article.getId());
+        Set<String> keys = redisService.getKeysByPattern("articlepage*");
+        redisService.delete(keys);
+    }
+
+    public void addOrUpdateByUser(JotterArticle article, User user) {
+        Timestamp now = new Timestamp(System.currentTimeMillis());
+        if (article.getId() == 0) {
+            article.setAuthor(user);
+            article.setCreateTime(now);
+            article.setUpdateTime(now);
+        } else {
+            JotterArticle oldArticle = jotterArticleDAO.findById(article.getId());
+            if (oldArticle != null) {
+                article.setAuthor(oldArticle.getAuthor());
+                article.setCreateTime(oldArticle.getCreateTime());
+                article.setUpdateTime(now);
+            }
+        }
+        jotterArticleDAO.save(article);
+
+        redisService.delete("article:" + article.getId());
         Set<String> keys = redisService.getKeysByPattern("articlepage*");
         redisService.delete(keys);
     }
