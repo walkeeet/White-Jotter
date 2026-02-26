@@ -47,6 +47,14 @@ export default new Router({
           path: '/library',
           name: 'Library',
           component: () => import('../components/library/LibraryIndex')
+        },
+        {
+          path: '/favorites',
+          name: 'MyFavorites',
+          component: () => import('../components/user/MyFavorites'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },
