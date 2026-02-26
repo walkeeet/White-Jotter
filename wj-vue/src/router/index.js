@@ -36,6 +36,14 @@ export default new Router({
           component: () => import('../components/jotter/ArticleDetails')
         },
         {
+          path: '/jotter/publish',
+          name: 'ArticlePublish',
+          component: () => import('../components/jotter/ArticlePublish'),
+          meta: {
+            requireAuth: true
+          }
+        },
+        {
           path: '/admin/content/editor',
           name: 'Editor',
           component: () => import('../components/admin/content/ArticleEditor'),
