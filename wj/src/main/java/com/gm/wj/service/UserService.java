@@ -124,4 +124,8 @@ public class UserService {
     public void deleteById(int id) {
         userDAO.deleteById(id);
     }
+
+    public User findById(int id) {
+        return userDAO.findById(id);
+    }
 }
