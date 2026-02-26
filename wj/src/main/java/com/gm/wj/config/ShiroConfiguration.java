@@ -44,6 +44,12 @@ public class ShiroConfiguration {
         filterChainDefinitionMap.put("/api/menu", "authc");
         filterChainDefinitionMap.put("/api/admin/**", "authc");
 
+        filterChainDefinitionMap.put("/api/book/favorite", "authc");
+        filterChainDefinitionMap.put("/api/book/unfavorite", "authc");
+        filterChainDefinitionMap.put("/api/book/favorites", "authc");
+        filterChainDefinitionMap.put("/api/book/favorite/ids", "anon");
+        filterChainDefinitionMap.put("/api/book/isFavorite/**", "anon");
+
         filterChainDefinitionMap.put("/api/admin/**", "url");  // 自定义过滤器设置 3，设置过滤路径
 
         shiroFilterFactoryBean.setFilters(customizedFilter); // 自定义过滤器设置 4，启用
