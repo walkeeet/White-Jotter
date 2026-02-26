@@ -1,10 +1,14 @@
 package com.gm.wj.controller;
 
 import com.gm.wj.entity.Book;
+import com.gm.wj.entity.User;
 import com.gm.wj.result.Result;
 import com.gm.wj.result.ResultFactory;
+import com.gm.wj.service.BookCollectionService;
 import com.gm.wj.service.BookService;
+import com.gm.wj.service.UserService;
 import com.gm.wj.util.StringUtils;
+import org.apache.shiro.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -23,6 +27,10 @@ import java.io.IOException;
 public class LibraryController {
     @Autowired
     BookService bookService;
+    @Autowired
+    BookCollectionService bookCollectionService;
+    @Autowired
+    UserService userService;
 
     @GetMapping("/api/books")
     public Result listBooks() {
@@ -75,6 +83,61 @@ public class LibraryController {
             e.printStackTrace();
             return "";
         }
+    }
+
+    @PostMapping("/api/collection/add")
+    public Result addCollection(@RequestParam("bid") int bid) {
+        String username = SecurityUtils.getSubject().getPrincipal().toString();
+        if (username == null) {
+            return ResultFactory.buildFailResult("请先登录");
+        }
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            return ResultFactory.buildFailResult("用户不存在");
+        }
+        bookCollectionService.addCollection(user.getId(), bid);
+        return ResultFactory.buildSuccessResult("收藏成功");
+    }
+
+    @PostMapping("/api/collection/remove")
+    public Result removeCollection(@RequestParam("bid") int bid) {
+        String username = SecurityUtils.getSubject().getPrincipal().toString();
+        if (username == null) {
+            return ResultFactory.buildFailResult("请先登录");
+        }
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            return ResultFactory.buildFailResult("用户不存在");
+        }
+        bookCollectionService.removeCollection(user.getId(), bid);
+        return ResultFactory.buildSuccessResult("取消收藏成功");
+    }
+
+    @GetMapping("/api/collection/list")
+    public Result listCollections() {
+        String username = SecurityUtils.getSubject().getPrincipal().toString();
+        if (username == null) {
+            return ResultFactory.buildFailResult("请先登录");
+        }
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            return ResultFactory.buildFailResult("用户不存在");
+        }
+        return ResultFactory.buildSuccessResult(bookCollectionService.listByUid(user.getId()));
+    }
+
+    @GetMapping("/api/collection/status")
+    public Result checkCollectionStatus(@RequestParam("bid") int bid) {
+        String username = SecurityUtils.getSubject().getPrincipal().toString();
+        if (username == null) {
+            return ResultFactory.buildSuccessResult(false);
+        }
+        User user = userService.findByUsername(username);
+        if (user == null) {
+            return ResultFactory.buildSuccessResult(false);
+        }
+        boolean isCollected = bookCollectionService.isCollected(user.getId(), bid);
+        return ResultFactory.buildSuccessResult(isCollected);
     }
 
 }
