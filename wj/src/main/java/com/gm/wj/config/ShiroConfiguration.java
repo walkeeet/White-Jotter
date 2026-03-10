@@ -38,7 +38,7 @@ public class ShiroConfiguration {
         Map<String, String> filterChainDefinitionMap = new LinkedHashMap<String, String>();
         Map<String, Filter> customizedFilter = new HashMap<>();  // 自定义过滤器设置 1
 
-        customizedFilter.put("url", getURLPathMatchingFilter()); // 自定义过滤器设置 2，命名，需在设置过滤路径前
+        customizedFilter.put("url", new URLPathMatchingFilter()); // 自定义过滤器设置 2，命名，需在设置过滤路径前
 
         filterChainDefinitionMap.put("/api/authentication", "authc"); // 防鸡贼登录
         filterChainDefinitionMap.put("/api/menu", "authc");
@@ -51,21 +51,18 @@ public class ShiroConfiguration {
         return shiroFilterFactoryBean;
     }
 
-    public URLPathMatchingFilter getURLPathMatchingFilter() {
-        return new URLPathMatchingFilter();
-    }
-
     @Bean
-    public SecurityManager securityManager() {
+    public SecurityManager securityManager(WJRealm wjRealm, CookieRememberMeManager rememberMeManager) {
         DefaultWebSecurityManager securityManager = new DefaultWebSecurityManager();
-        securityManager.setRealm(getWJRealm());
-        securityManager.setRememberMeManager(rememberMeManager());
+        securityManager.setRealm(wjRealm);
+        securityManager.setRememberMeManager(rememberMeManager);
         return securityManager;
     }
 
-    public CookieRememberMeManager rememberMeManager() {
+    @Bean
+    public CookieRememberMeManager rememberMeManager(SimpleCookie rememberMeCookie) {
         CookieRememberMeManager cookieRememberMeManager = new CookieRememberMeManager();
-        cookieRememberMeManager.setCookie(rememberMeCookie());
+        cookieRememberMeManager.setCookie(rememberMeCookie);
         cookieRememberMeManager.setCipherKey("EVANNIGHTLY_WAOU".getBytes());
         return cookieRememberMeManager;
     }
@@ -78,9 +75,9 @@ public class ShiroConfiguration {
     }
 
     @Bean
-    public WJRealm getWJRealm() {
+    public WJRealm wjRealm(HashedCredentialsMatcher hashedCredentialsMatcher) {
         WJRealm wjRealm = new WJRealm();
-        wjRealm.setCredentialsMatcher(hashedCredentialsMatcher());
+        wjRealm.setCredentialsMatcher(hashedCredentialsMatcher);
         return wjRealm;
     }
 

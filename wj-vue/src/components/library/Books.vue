@@ -24,6 +24,10 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <el-button class="collect-btn" :type="item.collected ? 'danger' : 'primary'" size="mini" @click.stop="toggleCollect(item)">
+            <i :class="item.collected ? 'el-icon-star-on' : 'el-icon-star-off'"></i>
+            {{ item.collected ? '已收藏' : '收藏' }}
+          </el-button>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -61,8 +65,55 @@
         this.$axios.get('/books').then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.checkCollectionStatus()
           }
         })
+      },
+      checkCollectionStatus () {
+        var _this = this
+        if (!_this.$store.state.username) {
+          return
+        }
+        _this.books.forEach(book => {
+          _this.$axios.get('/api/collection/status', {
+            params: { bookId: book.id }
+          }).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.collected = resp.data.result
+            }
+          })
+        })
+      },
+      toggleCollect (book) {
+        var _this = this
+        if (!_this.$store.state.username) {
+          _this.$message.warning('请先登录')
+          _this.$router.push('/login')
+          return
+        }
+        if (book.collected) {
+          _this.$axios.post('/collection/remove', null, {
+            params: { bookId: book.id }
+          }).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.collected = false
+              _this.$message.success('取消收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        } else {
+          _this.$axios.post('/collection/add', null, {
+            params: { bookId: book.id }
+          }).then(resp => {
+            if (resp && resp.data.code === 200) {
+              book.collected = true
+              _this.$message.success('收藏成功')
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        }
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage
@@ -74,6 +125,7 @@
           }).then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.checkCollectionStatus()
           }
         })
       }
@@ -132,6 +184,18 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .collect-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    width: 70px;
+    padding: 4px 0;
+  }
+
+  .book {
+    position: relative;
   }
 
 </style>

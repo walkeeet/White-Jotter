@@ -11,6 +11,7 @@ INSERT INTO `admin_menu` VALUES ('7', '/admin/user/role', 'Role', '角色配置'
 INSERT INTO `admin_menu` VALUES ('8', '/admin/content/book', 'BookManagement', '图书管理', null, 'content/BookManagement', '4');
 INSERT INTO `admin_menu` VALUES ('9', '/admin/content/banner', 'BannerManagement', '广告管理', null, 'content/BannerManagement', '4');
 INSERT INTO `admin_menu` VALUES ('10', '/admin/content/article', 'ArticleManagement', '文章管理', null, 'content/ArticleManagement', '4');
+INSERT INTO `admin_menu` VALUES ('11', '/admin/collection', 'BookCollection', '我的收藏', null, 'user/BookCollection', '3');
 
 -- ----------------------------
 -- Records of admin_permission
@@ -52,6 +53,7 @@ INSERT INTO `admin_role_menu` VALUES ('127', '1', '8');
 INSERT INTO `admin_role_menu` VALUES ('128', '1', '9');
 INSERT INTO `admin_role_menu` VALUES ('129', '1', '10');
 INSERT INTO `admin_role_menu` VALUES ('130', '1', '5');
+INSERT INTO `admin_role_menu` VALUES ('131', '1', '11');
 
 -- ----------------------------
 -- Records of admin_role_permission
