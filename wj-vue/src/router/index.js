@@ -47,6 +47,14 @@ export default new Router({
           path: '/library',
           name: 'Library',
           component: () => import('../components/library/LibraryIndex')
+        },
+        {
+          path: '/user/collection',
+          name: 'UserCollection',
+          component: () => import('../components/user/UserCollection'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },
@@ -129,6 +137,14 @@ export const createRouter = routes => new Router({
           path: '/library',
           name: 'Library',
           component: () => import('../components/library/LibraryIndex')
+        },
+        {
+          path: '/user/collection',
+          name: 'UserCollection',
+          component: () => import('../components/user/UserCollection'),
+          meta: {
+            requireAuth: true
+          }
         }
       ]
     },

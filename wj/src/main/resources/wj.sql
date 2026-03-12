@@ -269,3 +269,48 @@ CREATE TABLE `user` (
 INSERT INTO `user` VALUES ('1', 'admin', '35b9529f89cfb9b848060ca576237e17', '8O+vDNr2sI3N82BI31fu1A==', '管理员', '12312312312', 'evan_nightly@163.com', '1');
 INSERT INTO `user` VALUES ('2', 'test', '85087738b6c1e1d212683bfafc163853', 'JBba3j5qRykIPJQYTNNH9A==', '测试', '12312312312', '123@123.com', '1');
 INSERT INTO `user` VALUES ('3', 'editor', '8583a2d965d6159edbf65c82d871fa3e', 'MZTe7Qwf9QgXBXrZzTIqJQ==', '编辑', null, null, '1');
+
+-- ----------------------------
+-- Table structure for user_book_collection
+-- ----------------------------
+DROP TABLE IF EXISTS `user_book_collection`;
+CREATE TABLE `user_book_collection` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `uid` int(11) NOT NULL,
+  `bid` int(11) NOT NULL,
+  `collect_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_uid_bid` (`uid`,`bid`),
+  KEY `fk_collection_user` (`uid`),
+  KEY `fk_collection_book` (`bid`),
+  CONSTRAINT `fk_collection_user` FOREIGN KEY (`uid`) REFERENCES `user` (`id`) ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT `fk_collection_book` FOREIGN KEY (`bid`) REFERENCES `book` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+-- ----------------------------
+-- Add collection permission
+-- ----------------------------
+INSERT INTO `admin_permission` VALUES ('4', 'book_collection', '书籍收藏管理', '/api/collection/**');
+
+-- ----------------------------
+-- Add collection menu items to admin_menu
+-- ----------------------------
+INSERT INTO `admin_menu` VALUES ('11', '/admin', 'UserCollection', '收藏管理', 'el-icon-star-on', 'AdminIndex', '0');
+INSERT INTO `admin_menu` VALUES ('12', '/admin/user/collection', 'UserBookCollection', '书籍收藏', null, 'user/UserCollection', '11');
+
+-- ----------------------------
+-- Grant collection permission to roles (sysAdmin, contentManager, visitor)
+-- ----------------------------
+INSERT INTO `admin_role_permission` VALUES ('140', '1', '4');
+INSERT INTO `admin_role_permission` VALUES ('141', '2', '4');
+INSERT INTO `admin_role_permission` VALUES ('142', '3', '4');
+
+-- ----------------------------
+-- Grant menu access to roles
+-- ----------------------------
+INSERT INTO `admin_role_menu` VALUES ('194', '1', '11');
+INSERT INTO `admin_role_menu` VALUES ('195', '1', '12');
+INSERT INTO `admin_role_menu` VALUES ('196', '2', '11');
+INSERT INTO `admin_role_menu` VALUES ('197', '2', '12');
+INSERT INTO `admin_role_menu` VALUES ('198', '3', '11');
+INSERT INTO `admin_role_menu` VALUES ('199', '3', '12');

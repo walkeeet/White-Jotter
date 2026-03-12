@@ -13,7 +13,7 @@
           <span>{{item.press}}</span>
         </p>
         <p slot="content" style="width: 300px" class="abstract">{{item.abs}}</p>
-        <el-card style="width: 135px;margin-bottom: 20px;height: 233px;float: left;margin-right: 15px" class="book"
+        <el-card style="width: 135px;margin-bottom: 20px;height: 260px;float: left;margin-right: 15px" class="book"
                  bodyStyle="padding:10px" shadow="hover">
           <div class="cover">
             <img :src="item.cover" alt="封面">
@@ -24,6 +24,14 @@
             </div>
           </div>
           <div class="author">{{item.author}}</div>
+          <el-button 
+            :type="collectionStatus[item.id] ? 'danger' : 'primary'" 
+            size="mini" 
+            class="collect-btn"
+            @click.stop="toggleCollection(item)">
+            <i :class="collectionStatus[item.id] ? 'el-icon-star-off' : 'el-icon-star-on'"></i>
+            {{ collectionStatus[item.id] ? '已收藏' : '收藏' }}
+          </el-button>
         </el-card>
       </el-tooltip>
     </el-row>
@@ -49,11 +57,17 @@
       return {
         books: [],
         currentPage: 1,
-        pagesize: 18
+        pagesize: 18,
+        collectionStatus: {}
       }
     },
     mounted: function () {
       this.loadBooks()
+    },
+    computed: {
+      isLoggedIn () {
+        return this.$store.state.username !== ''
+      }
     },
     methods: {
       loadBooks () {
@@ -61,8 +75,55 @@
         this.$axios.get('/books').then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.checkCollectionStatus()
           }
         })
+      },
+      checkCollectionStatus () {
+        if (!this.isLoggedIn) {
+          return
+        }
+        var _this = this
+        this.books.forEach(book => {
+          _this.$axios.get('/collection/check/' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.$set(_this.collectionStatus, book.id, resp.data.result)
+            }
+          })
+        })
+      },
+      toggleCollection (book) {
+        if (!this.isLoggedIn) {
+          this.$confirm('请先登录后再收藏书籍', '提示', {
+            confirmButtonText: '去登录',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }).then(() => {
+            this.$router.push({ path: '/login', query: { redirect: '/library' } })
+          })
+          return
+        }
+        
+        var _this = this
+        if (this.collectionStatus[book.id]) {
+          this.$axios.post('/collection/remove/' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.$set(_this.collectionStatus, book.id, false)
+              _this.$message.success(resp.data.message)
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        } else {
+          this.$axios.post('/collection/add/' + book.id).then(resp => {
+            if (resp && resp.data.code === 200) {
+              _this.$set(_this.collectionStatus, book.id, true)
+              _this.$message.success(resp.data.message)
+            } else {
+              _this.$message.error(resp.data.message)
+            }
+          })
+        }
       },
       handleCurrentChange: function (currentPage) {
         this.currentPage = currentPage
@@ -74,6 +135,7 @@
           }).then(resp => {
           if (resp && resp.data.code === 200) {
             _this.books = resp.data.result
+            _this.checkCollectionStatus()
           }
         })
       }
@@ -93,7 +155,6 @@
   img {
     width: 115px;
     height: 172px;
-    /*margin: 0 auto;*/
   }
 
   .title {
@@ -105,7 +166,7 @@
     color: #333;
     width: 102px;
     font-size: 13px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     text-align: left;
   }
 
@@ -132,6 +193,11 @@
 
   a:link, a:visited, a:focus {
     color: #3377aa;
+  }
+
+  .collect-btn {
+    width: 100%;
+    margin-top: 5px;
   }
 
 </style>
