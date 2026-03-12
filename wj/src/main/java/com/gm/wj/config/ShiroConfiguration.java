@@ -42,6 +42,7 @@ public class ShiroConfiguration {
 
         filterChainDefinitionMap.put("/api/authentication", "authc"); // 防鸡贼登录
         filterChainDefinitionMap.put("/api/menu", "authc");
+        filterChainDefinitionMap.put("/api/collection/**", "authc");
         filterChainDefinitionMap.put("/api/admin/**", "authc");
 
         filterChainDefinitionMap.put("/api/admin/**", "url");  // 自定义过滤器设置 3，设置过滤路径
